@@ -119,6 +119,11 @@ This project uses the GYWD (Get Your Work Done) framework for planning and execu
 - `.planning/phases/` — per-phase plans and summaries
 - Use `/gywd:progress` to check status, `/gywd:execute-plan` to run plans
 
+## Strict Instructions
+
+- **Context management**: When session context usage hits 70%, IMMEDIATELY use `/compact` to compress conversation history before continuing. Do NOT wait until context is full. This is non-negotiable.
+- **Sequential plan execution**: When executing multiple plans back-to-back, `/compact` between plans if context is above 50%.
+
 ## Common Pitfalls
 
 - `arcade.Text()` in draw loops = memory leak + lag. Always reuse.
