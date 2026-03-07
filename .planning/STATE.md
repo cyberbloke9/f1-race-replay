@@ -5,49 +5,51 @@
 See: .planning/PROJECT.md (updated 2026-03-07)
 
 **Core value:** The pit wall insight system — dedicated analysis windows that transform raw telemetry into actionable race understanding
-**Current focus:** Phase 2 — Gap Computation
+**Current focus:** Phase 3 — Lap Time Evolution Insight
 
 ## Current Position
 
-Phase: 2 of 10 (Gap Computation)
+Phase: 3 of 10 (Lap Time Evolution)
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-03-07 — Phase 1 complete (76 tests passing)
+Last activity: 2026-03-07 — Phase 2 complete (88 tests passing)
 
-Progress: █░░░░░░░░░ 10%
+Progress: ██░░░░░░░░ 17%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~5 min/plan
-- Total execution time: ~25 min
+- Total plans completed: 8
+- Average duration: ~4 min/plan
+- Total execution time: ~34 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation & Testing | 5/5 | ~25 min | ~5 min |
+| 2. Gap Computation | 3/3 | ~9 min | ~3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01, 01-02, 01-03, 01-04, 01-05
-- Trend: Steady, all plans first-pass (except 01-03 needed distance test fix)
+- Last 5 plans: 01-04, 01-05, 02-01, 02-02, 02-03
+- Trend: Accelerating — Phase 2 plans faster due to established patterns
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
 - Mock FastF1 sessions (never hit network in tests)
 - Real localhost sockets for stream tests (not mocked)
 - Behavioral property tests for Bayesian model (not exact math)
 - Reset SettingsManager singleton between tests (autouse fixture)
+- Progress metric: (lap - 1) + rel_dist as continuous float for gap computation
+- Lapped cars use negative gap values (-1.0 per lap behind)
+- Pre-computed gap data embedded in frame driver dicts (gap_to_leader, gap_to_ahead)
+- Leaderboard falls back to crude distance math for old cached pickle files
 
 ### Deferred Issues
 
-- f1_data.py `total_dist_so_far` is never incremented in the `_process_single_driver` loop — race distance doesn't accumulate across laps. This is a pre-existing bug, not introduced by tests. Should be fixed in Phase 2 (Gap Computation).
+- ~~f1_data.py `total_dist_so_far` bug~~ — RESOLVED in Phase 2 (02-02)
 
 ### Blockers/Concerns
 
@@ -56,5 +58,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-07
-Stopped at: Phase 1 complete, all 76 tests passing
+Stopped at: Phase 2 complete, all 88 tests passing
 Resume file: None
