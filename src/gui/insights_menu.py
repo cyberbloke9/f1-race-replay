@@ -59,7 +59,14 @@ class InsightsMenu(QMainWindow):
                 ("Driver Live Telemetry", "Speed, gear, throttle & braking for a selected driver", self.launch_driver_telemetry),
             ]
         ))
-        
+
+        content_layout.addWidget(self.create_category_section(
+            "Race Analysis",
+            [
+                ("Lap Time Evolution", "Lap times per driver with tyre compound colors", self.launch_lap_time_evolution),
+            ]
+        ))
+
         content_layout.addStretch()
         
         scroll.setWidget(content_widget)
@@ -206,9 +213,11 @@ class InsightsMenu(QMainWindow):
         print("🚀 Launching: Sector Times")
         self.show_placeholder_message("Sector Times")
     
-    def launch_lap_evolution(self):
-        print("🚀 Launching: Lap Time Evolution")
-        self.show_placeholder_message("Lap Time Evolution")
+    def launch_lap_time_evolution(self):
+        from src.insights.lap_time_evolution_window import LapTimeEvolutionWindow
+        window = LapTimeEvolutionWindow()
+        window.show()
+        self.opened_windows.append(window)
     
     def launch_top_speed(self):
         print("🚀 Launching: Top Speed Tracker")
