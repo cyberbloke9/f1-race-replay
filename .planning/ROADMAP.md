@@ -12,7 +12,7 @@ None
 
 - [x] **Phase 1: Foundation & Testing** — pytest infrastructure + test coverage for data pipeline and utilities
 - [x] **Phase 2: Gap Computation** — accurate time-based gaps replacing distance approximation
-- [ ] **Phase 3: Lap Time Evolution Insight** — chart showing lap times across the race per driver
+- [x] **Phase 3: Lap Time Evolution Insight** — chart showing lap times across the race per driver
 - [ ] **Phase 4: Tyre Strategy Insight** — visual stint timeline with degradation and pit windows
 - [ ] **Phase 5: Pit Stop Analysis Insight** — pit durations, undercuts/overcuts, time delta
 - [ ] **Phase 6: Gap & Battle Analysis Insight** — real-time gap evolution and battle detection
@@ -54,9 +54,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Lap time data extraction from telemetry stream (accumulate per-lap times)
-- [ ] 03-02: Matplotlib chart with driver selection, compound colors, pit/SC markers
-- [ ] 03-03: Wire into insights menu + tests
+- [x] 03-01: LapTimeEvolutionWindow with accumulation, chart, menu wiring, and tests
 
 ### Phase 4: Tyre Strategy Insight
 **Goal**: PitWallWindow showing horizontal stint bars per driver — compound type, stint length, degradation rate, and optimal pit window prediction using the Bayesian model
@@ -155,7 +153,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Foundation & Testing | 5/5 | Complete | 2026-03-07 |
 | 2. Gap Computation | 3/3 | Complete | 2026-03-07 |
-| 3. Lap Time Evolution | 0/3 | Not started | - |
+| 3. Lap Time Evolution | 1/1 | Complete | 2026-03-07 |
 | 4. Tyre Strategy | 0/4 | Not started | - |
 | 5. Pit Stop Analysis | 0/4 | Not started | - |
 | 6. Gap & Battle Analysis | 0/3 | Not started | - |
