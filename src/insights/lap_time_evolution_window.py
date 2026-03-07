@@ -55,6 +55,7 @@ class _DriverState:
     current_lap: int | None = None
     lap_start_t: float | None = None
     last_compound: int | None = None
+    pending_pit: bool = False  # True if the current lap started after a pit stop
 
 
 @dataclass
@@ -128,23 +129,24 @@ class LapTimeAccumulator:
 
                 # Skip lap 1 (formation/out lap) and outliers
                 if completed_lap_num >= 2 and lap_time <= _OUTLIER_THRESHOLD_S:
-                    # Detect pit stop: compound changed from previous completed lap
-                    is_pit = False
-                    if state.last_compound is not None and compound is not None:
-                        if compound != state.last_compound:
-                            is_pit = True
-
                     self.completed_laps[code].append(CompletedLap(
                         lap_num=completed_lap_num,
                         lap_time_s=lap_time,
                         compound_int=state.last_compound if state.last_compound is not None else 0,
-                        is_pit_stop=is_pit,
+                        is_pit_stop=state.pending_pit,
                     ))
+
+            # Detect pit stop for the NEW lap: compound changed at boundary
+            is_pit_next = False
+            if state.last_compound is not None and compound is not None:
+                if compound != state.last_compound:
+                    is_pit_next = True
 
             # Reset for the new lap
             state.current_lap = lap
             state.lap_start_t = session_t
             state.last_compound = compound
+            state.pending_pit = is_pit_next
         else:
             # Same lap — update compound if it changed mid-lap (shouldn't normally happen)
             if compound is not None:
