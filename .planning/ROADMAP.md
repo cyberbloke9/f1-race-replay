@@ -10,7 +10,7 @@ None
 
 ## Phases
 
-- [ ] **Phase 1: Foundation & Testing** — pytest infrastructure + test coverage for data pipeline and utilities
+- [x] **Phase 1: Foundation & Testing** — pytest infrastructure + test coverage for data pipeline and utilities
 - [ ] **Phase 2: Gap Computation** — accurate time-based gaps replacing distance approximation
 - [ ] **Phase 3: Lap Time Evolution Insight** — chart showing lap times across the race per driver
 - [ ] **Phase 4: Tyre Strategy Insight** — visual stint timeline with degradation and pit windows
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Testing | 0/5 | Not started | - |
+| 1. Foundation & Testing | 5/5 | Complete | 2026-03-07 |
 | 2. Gap Computation | 0/3 | Not started | - |
 | 3. Lap Time Evolution | 0/3 | Not started | - |
 | 4. Tyre Strategy | 0/4 | Not started | - |
