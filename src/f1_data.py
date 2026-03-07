@@ -9,6 +9,7 @@ import fastf1.plotting
 import numpy as np
 import pandas as pd
 
+from src.lib.gaps import compute_driver_gaps
 from src.lib.settings import get_settings
 from src.lib.time import parse_time_string
 from src.lib.tyres import get_tyre_compound_int
@@ -290,6 +291,9 @@ def get_race_telemetry(session, session_type="R"):
             if not np.isnan(c_max):
                 max_tyre_life_map[int(t_int)] = max(max_tyre_life_map.get(int(t_int), 1), int(c_max))
 
+    # 3.1 Compute time-based gaps for all drivers
+    gap_data = compute_driver_gaps(resampled_data, timeline)
+
     # 4. Incorporate track status data into the timeline (for safety car, VSC, etc.)
 
     track_status = session.track_status
@@ -412,6 +416,17 @@ def get_race_telemetry(session, session_type="R"):
             position = idx + 1
 
             # include speed, gear, drs_active in frame driver dict
+            # Add pre-computed gap data
+            driver_gap = gap_data.get(code)
+            if driver_gap is not None:
+                gap_leader = driver_gap["gap_to_leader"][i]
+                gap_ahead = driver_gap["gap_to_ahead"][i]
+                gap_to_leader = float(gap_leader) if not np.isnan(gap_leader) else None
+                gap_to_ahead = float(gap_ahead) if not np.isnan(gap_ahead) else None
+            else:
+                gap_to_leader = None
+                gap_to_ahead = None
+
             frame_data[code] = {
                 "x": car["x"],
                 "y": car["y"],
@@ -426,6 +441,8 @@ def get_race_telemetry(session, session_type="R"):
                 "drs": car["drs"],
                 "throttle": car["throttle"],
                 "brake": car["brake"],
+                "gap_to_leader": gap_to_leader,
+                "gap_to_ahead": gap_to_ahead,
             }
 
         weather_snapshot = {}
