@@ -302,30 +302,42 @@ class LeaderboardComponent(BaseComponent):
         if not self.entries:
             return
 
-        leader_progress_val = self.entries[0][3]
-
         for idx, (code, _, pos, progress_m) in enumerate(self.entries):
+            # Use pre-computed gap from frame data if available
+            gap_to_leader = pos.get("gap_to_leader")
+            gap_to_ahead = pos.get("gap_to_ahead")
+
             # Leader gap
-            try:
-                raw_to_leader = abs(leader_progress_val - (progress_m or 0.0))
-                dist_to_leader = raw_to_leader / 10.0
-                time_to_leader = dist_to_leader / 55.56
-                self.computed_gaps[code] = 0.0 if idx == 0 else time_to_leader
-            except Exception:
-                self.computed_gaps[code] = None
+            if idx == 0:
+                self.computed_gaps[code] = 0.0
+            elif gap_to_leader is not None:
+                self.computed_gaps[code] = gap_to_leader
+            else:
+                # Fallback: crude distance approximation (for old cached data)
+                leader_progress = self.entries[0][3]
+                try:
+                    raw = abs(leader_progress - (progress_m or 0.0))
+                    self.computed_gaps[code] = (raw / 10.0) / 55.56
+                except Exception:
+                    self.computed_gaps[code] = None
 
             # Neighbor gap
             ahead_info = None
-            try:
-                if idx > 0:
-                    code_ahead, _, _, progress_ahead = self.entries[idx - 1]
-                    raw = abs((progress_m or 0.0) - (progress_ahead or 0.0))
-                    dist_m = raw / 10.0
-                    time_s = dist_m / 55.56
-                    ahead_info = (code_ahead, dist_m, time_s)
-            except Exception:
-                ahead_info = None
-            
+            if idx > 0:
+                code_ahead = self.entries[idx - 1][0]
+                if gap_to_ahead is not None:
+                    ahead_info = (code_ahead, 0.0, gap_to_ahead)
+                else:
+                    # Fallback: crude distance approximation
+                    try:
+                        progress_ahead = self.entries[idx - 1][3]
+                        raw = abs((progress_m or 0.0) - (progress_ahead or 0.0))
+                        dist_m = raw / 10.0
+                        time_s = dist_m / 55.56
+                        ahead_info = (code_ahead, dist_m, time_s)
+                    except Exception:
+                        ahead_info = None
+
             self.computed_neighbor_gaps[code] = {"ahead": ahead_info}
 
     def draw(self, window):
