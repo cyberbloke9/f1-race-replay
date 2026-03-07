@@ -32,18 +32,16 @@ class TestProcessSingleDriver:
         # 3 laps of 10 rows each = 30 total
         assert len(result["data"]["t"]) == single_lap_len * 3
 
-    def test_race_distance_present_and_valid(self, mock_session):
+    def test_race_distance_accumulates_across_laps(self, mock_session):
         result = _process_single_driver(("1", mock_session, "VER"))
         assert result is not None
 
         dist = result["data"]["dist"]
-        # Note: total_dist_so_far in f1_data.py is initialized to 0 but never
-        # incremented in the loop — so race_d_lap equals d_lap for every lap.
-        # This is a known limitation. We verify the distance array is present,
-        # non-negative, and has the right length.
         assert len(dist) == 30  # 3 laps x 10 rows
         assert dist.min() >= 0.0, "Race distance should never be negative"
-        assert dist.max() <= 5000.0 + 1e-6, "Max distance within single lap bounds"
+        # With total_dist_so_far fix, distance accumulates: 3 laps × 5000m max = 15000m
+        assert dist.max() > 5000.0, "Distance should accumulate beyond single lap"
+        assert dist.max() <= 15000.0 + 1e-6, "Max distance within 3-lap bounds"
 
     def test_empty_laps_returns_none(self, mock_session):
         # Driver '99' doesn't exist in mock_laps

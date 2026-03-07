@@ -98,6 +98,9 @@ def _process_single_driver(args):
         throttle_all.append(throttle_lap)
         brake_all.append(brake_lap)
 
+        # Accumulate distance for next lap's base offset
+        total_dist_so_far += d_lap.max()
+
     if not t_all:
         return None
 
