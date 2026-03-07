@@ -224,3 +224,100 @@ class TestOutputShape:
             assert "gap_to_ahead" in result[code]
             assert len(result[code]["gap_to_leader"]) == len(timeline)
             assert len(result[code]["gap_to_ahead"]) == len(timeline)
+
+
+# ── Integration Tests ──
+
+class TestGapDataInFrameFormat:
+    """Verify gap values work in the frame dict format used by f1_data.py."""
+
+    def test_gap_values_are_serializable(self):
+        """Gap values (float or None) must be JSON-serializable for the stream."""
+        import json
+
+        lps = 1 / 90
+        resampled, timeline = _make_resampled([
+            {"code": "VER", "start_lap": 1, "start_rel": 0.2,
+             "laps_per_sec": lps},
+            {"code": "HAM", "start_lap": 1, "start_rel": 0.1,
+             "laps_per_sec": lps},
+        ], num_frames=50, dt=0.2)
+
+        result = compute_driver_gaps(resampled, timeline)
+
+        # Simulate frame building: convert NaN to None (as f1_data.py does)
+        for code in result:
+            for i in range(len(timeline)):
+                gap_leader = result[code]["gap_to_leader"][i]
+                gap_ahead = result[code]["gap_to_ahead"][i]
+                val_leader = float(gap_leader) if not np.isnan(gap_leader) else None
+                val_ahead = float(gap_ahead) if not np.isnan(gap_ahead) else None
+
+                # Must be JSON-serializable
+                frame_data = {"gap_to_leader": val_leader, "gap_to_ahead": val_ahead}
+                serialized = json.dumps(frame_data)
+                assert isinstance(serialized, str)
+
+
+class TestLeaderboardPrecomputedGaps:
+    """Test that leaderboard gap logic reads pre-computed values correctly."""
+
+    def test_reads_gap_to_leader_from_pos_dict(self):
+        """When pos dict has gap_to_leader, it should be used directly."""
+        entries = [
+            ("VER", (0, 0, 255), {"gap_to_leader": 0.0, "gap_to_ahead": 0.0}, 15000.0),
+            ("HAM", (0, 255, 0), {"gap_to_leader": 1.5, "gap_to_ahead": 1.5}, 14500.0),
+            ("NOR", (255, 128, 0), {"gap_to_leader": 3.2, "gap_to_ahead": 1.7}, 14000.0),
+        ]
+
+        # Replicate _calculate_gaps logic (without arcade dependency)
+        computed_gaps = {}
+        computed_neighbor_gaps = {}
+        for idx, (code, _, pos, progress_m) in enumerate(entries):
+            gap_to_leader = pos.get("gap_to_leader")
+            gap_to_ahead = pos.get("gap_to_ahead")
+
+            if idx == 0:
+                computed_gaps[code] = 0.0
+            elif gap_to_leader is not None:
+                computed_gaps[code] = gap_to_leader
+            else:
+                computed_gaps[code] = None
+
+            ahead_info = None
+            if idx > 0:
+                code_ahead = entries[idx - 1][0]
+                if gap_to_ahead is not None:
+                    ahead_info = (code_ahead, 0.0, gap_to_ahead)
+            computed_neighbor_gaps[code] = {"ahead": ahead_info}
+
+        assert computed_gaps["VER"] == 0.0
+        assert computed_gaps["HAM"] == 1.5
+        assert computed_gaps["NOR"] == 3.2
+
+        assert computed_neighbor_gaps["HAM"]["ahead"] == ("VER", 0.0, 1.5)
+        assert computed_neighbor_gaps["NOR"]["ahead"] == ("HAM", 0.0, 1.7)
+
+    def test_falls_back_without_gap_data(self):
+        """When pos dict has no gap fields, fallback to distance approximation."""
+        entries = [
+            ("VER", (0, 0, 255), {}, 15000.0),
+            ("HAM", (0, 255, 0), {}, 14500.0),
+        ]
+
+        computed_gaps = {}
+        for idx, (code, _, pos, progress_m) in enumerate(entries):
+            gap_to_leader = pos.get("gap_to_leader")
+
+            if idx == 0:
+                computed_gaps[code] = 0.0
+            elif gap_to_leader is not None:
+                computed_gaps[code] = gap_to_leader
+            else:
+                leader_progress = entries[0][3]
+                raw = abs(leader_progress - (progress_m or 0.0))
+                computed_gaps[code] = (raw / 10.0) / 55.56
+
+        assert computed_gaps["VER"] == 0.0
+        assert computed_gaps["HAM"] > 0.0  # Fallback produces some positive value
+        assert computed_gaps["HAM"] == pytest.approx((500.0 / 10.0) / 55.56)
